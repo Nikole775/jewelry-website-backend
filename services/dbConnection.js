@@ -3,7 +3,7 @@ import sql from 'mssql';
 const config = {
     user: 'labo.nikole2004',
     password: 'Korral775',
-    server: 'tcp://4.tcp.eu.ngrok.io',
+    server: '4.tcp.eu.ngrok.io',
     port: 18669,
     database: 'JewelryDB',
     options: {
