@@ -266,7 +266,7 @@ const server = http.createServer(app);
 // WebSocket setup
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: ["https://jewelry-website-frontend-h4pb.onrender.com"],
         methods: ["GET", "POST"]
     }
 });
