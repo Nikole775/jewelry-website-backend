@@ -2,6 +2,7 @@ import userModel from '../models/user.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_here';
+const {sendVerificationEmail} = require('../utils/mail');
 
 export async function register(req, res) {
     const { email, username, password, role } = req.body;
@@ -42,6 +43,9 @@ export async function login(req, res) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        const cod = math.floor(100000 + math.random()* 900000);
+        await sendVerificationEmail(user, cod);
+        
         const token = jwt.sign({ id: user.id, roleId: user.roleId }, JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (err) {
