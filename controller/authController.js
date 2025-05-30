@@ -2,7 +2,7 @@ import userModel from '../models/user.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_here';
-const {sendVerificationEmail} = require('../utils/mail');
+import {sendVerificationEmail} from '../utils/mail.js';
 
 export async function register(req, res) {
     const { email, username, password, role } = req.body;
