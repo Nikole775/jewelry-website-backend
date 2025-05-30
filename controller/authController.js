@@ -43,8 +43,8 @@ export async function login(req, res) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        const cod = math.floor(100000 + math.random()* 900000);
-        await sendVerificationEmail(user, cod);
+        const cod = Math.floor(100000 + Math.random()* 900000);
+        await sendVerificationEmail(user.username, cod);
         
         const token = jwt.sign({ id: user.id, roleId: user.roleId }, JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
