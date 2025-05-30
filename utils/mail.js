@@ -12,8 +12,8 @@ async function sendVerificationEmail(to, code) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to,
-        subject: 'Your Login Verification Code',
-        text: Your verification code is: ${code},
+        subject:'Your Login Verification Code',
+        text:'Your verification code is: ${code}',
     };
 
     await transporter.sendMail(mailOptions);
