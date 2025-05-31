@@ -44,7 +44,7 @@ export async function login(req, res) {
         }
 
         const cod = Math.floor(100000 + Math.random()* 900000);
-        await sendVerificationEmail(user.username, cod);
+        await sendVerificationEmail(user.email, cod);
         
         const token = jwt.sign({ id: user.id, roleId: user.roleId }, JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
