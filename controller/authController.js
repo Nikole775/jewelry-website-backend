@@ -7,7 +7,8 @@ import {sendVerificationEmail} from '../utils/mail.js';
 export async function register(req, res) {
     const { email, username, password, role } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'Username and password required' });
+        return res.status(400).json({ error: 'Username and password required',
+                                    received: req.body});
     }
 
     // Assign roleId based on role string (default to Regular User)
@@ -30,20 +31,25 @@ export async function register(req, res) {
 export async function login(req, res) {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'email and password required' });
+        return res.status(400).json({ error: 'email and password required',
+                                    received: req.body});
     }
 
     try {
         const user = await userModel.findByEmail(email);
         if (!user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            console.log('Login attempt for non-existent email:', email);
+            return res.status(401).json({ error: 'Invalid credentials' ,
+                                        suggestion: 'No user found with this email'});
         }
 
         if (password !== user.passwordHash) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            console.log('Password mismatch for user:', email);
+            return res.status(401).json({ error: 'Invalid credentials',
+                                        suggestion: 'Check your password'});
         }
 
-        const cod = Math.floor(100000 + Math.random()* 900000);
+        const cod = Math.floor(100000 + Math.random()* 900000).toString();
         await sendVerificationEmail(user.email, cod);
         
         const token = jwt.sign({ id: user.id, roleId: user.roleId }, JWT_SECRET, { expiresIn: '1h' });
