@@ -29,32 +29,32 @@ export async function register(req, res) {
 }
 
 export async function login(req, res) {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'email and password required',
+                                    received: req.body});
+    }
+
     try {
-        const { email, password } = req.body;
-        
-        // 1. Find user and validate credentials
         const user = await userModel.findByEmail(email);
-        if (!user || password !== user.passwordHash) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        if (!user) {
+            console.log('Login attempt for non-existent email:', email);
+            return res.status(401).json({ error: 'Invalid credentials' ,
+                                        suggestion: 'No user found with this email'});
+        }
+if (password !== user.passwordHash) {
+            console.log('Password mismatch for user:', email);
+            return res.status(401).json({ error: 'Invalid credentials',
+                                        suggestion: 'Check your password'});
         }
 
-        // 2. Generate and store verification code (in database)
-        const verificationCode = Math.floor(100000 + Math.random() * 900000);
-        await userModel.storeVerificationCode(user.id, verificationCode);
-
-        // 3. Send email
-        await sendVerificationEmail(user.email, verificationCode);
-
-        // 4. Respond WITHOUT token
-        res.json({ 
-            success: true,
-            message: "Verification code sent",
-            nextStep: "/verify-code",
-            email: user.email // Include email for frontend reference
-        });
-
+        const cod = Math.floor(100000 + Math.random()* 900000).toString();
+        await sendVerificationEmail(user.email, cod);
+        
+        const token = jwt.sign({ id: user.id, roleId: user.roleId }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token });
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ error: 'Login failed' });
-    }
+        res.status(500).json({ error: 'Internal server error' });
+    }
 }
