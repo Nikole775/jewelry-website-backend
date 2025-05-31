@@ -31,30 +31,61 @@ export async function register(req, res) {
 export async function login(req, res) {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'email and password required',
-                                    received: req.body});
+        return res.status(400).json({ error: 'email and password required', received: req.body });
     }
 
     try {
         const user = await userModel.findByEmail(email);
         if (!user) {
             console.log('Login attempt for non-existent email:', email);
-            return res.status(401).json({ error: 'Invalid credentials' ,
-                                        suggestion: 'No user found with this email'});
-        }
-if (password !== user.passwordHash) {
-            console.log('Password mismatch for user:', email);
-            return res.status(401).json({ error: 'Invalid credentials',
-                                        suggestion: 'Check your password'});
+            return res.status(401).json({ 
+                error: 'Invalid credentials',
+                suggestion: 'No user found with this email'
+            });
         }
 
-        const cod = Math.floor(100000 + Math.random()* 900000).toString();
-        await sendVerificationEmail(user.email, cod);
+        if (password !== user.passwordHash) {
+            console.log('Password mismatch for user:', email);
+            return res.status(401).json({ 
+                error: 'Invalid credentials',
+                suggestion: 'Check your password'
+            });
+        }
+
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await userModel.updateVerificationCode(email, verificationCode);
+        await sendVerificationEmail(user.email, verificationCode);
         
-        const token = jwt.sign({ id: user.id, roleId: user.roleId }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
+        res.json({ success: true, message: 'Verification code sent' });
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+        res.status(500).json({ error: 'Internal server error' });
+    }
+    }
+
+export async function verifyCode(req, res) {
+    const { email, cod } = req.body;
+    
+    try {
+        const user = await userModel.verifyCode(email, cod);
+        
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid verification code' });
+        }
+
+        // Clear the verification code after successful verification
+        await userModel.clearVerificationCode(email);
+        
+        // Generate token only after successful verification
+        const token = jwt.sign(
+            { id: user.id, roleId: user.roleId }, 
+            JWT_SECRET, 
+            { expiresIn: '1h' }
+        );
+        
+        res.json({ token });
+    } catch (err) {
+        console.error('Verification error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 }
