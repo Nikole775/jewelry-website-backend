@@ -4,7 +4,7 @@ const config = {
     user: 'labo.nikole2004',
     password: 'Korral775',
     server: '2.tcp.eu.ngrok.io',
-    port: 15092,
+    port: 13399,
     database: 'JewelryDB',
     options: {
         trustServerCertificate: true,
