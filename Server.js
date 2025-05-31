@@ -286,10 +286,26 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+const allowedOrigins = [
+  "https://jewelry-website-frontend-h4pb.onrender.com",
+  "https://jewelry-website-frontend.onrender.com"
+];
+
 // Middleware
 app.use(cors({
-    origin: "https://jewelry-website-frontend.onrender.com", // Your frontend URL
-    credentials: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use('/uploads', express.static(uploadPath));
