@@ -1,7 +1,7 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // or another SMTP service
+    service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -12,10 +12,9 @@ export async function sendVerificationEmail(to, code) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to,
-        subject:'Your Login Verification Code',
-        text:'Your verification code is: ${code}',
+        subject: 'Your Login Verification Code',
+        text: `Your verification code is: ${code}`, // <-- Fixed string interpolation
     };
 
     await transporter.sendMail(mailOptions);
 }
-export default{sendVerificationEmail}
