@@ -40,6 +40,31 @@ class UserModel {
         return result.recordset[0];
     }
 
+    async updateVerificationCode(email, code) {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('email', sql.NVarChar, email)
+            .input('code', sql.NVarChar, code)
+            .query('UPDATE Users SET verificationCode = @code WHERE email = @email');
+        return result.rowsAffected[0] > 0;
+    }
+
+    async verifyCode(email, code) {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('email', sql.NVarChar, email)
+            .input('code', sql.NVarChar, code)
+            .query('SELECT * FROM Users WHERE email = @email AND verificationCode = @code');
+        return result.recordset[0];
+    }
+
+    async clearVerificationCode(email) {
+        const pool = await poolPromise;
+        await pool.request()
+            .input('email', sql.NVarChar, email)
+            .query('UPDATE Users SET verificationCode = NULL WHERE email = @email');
+    }
+
 }
 
 export default new UserModel();
